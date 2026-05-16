@@ -947,8 +947,21 @@ def main():
     # ══════════════════════════════════════════
     # MAIN CONTENT
     # ══════════════════════════════════════════
-    if not doc:
-        st.info("👈 กรุณาอัปโหลดไฟล์ PDF จากแถบเมนูด้านซ้ายเพื่อเริ่มต้น")
+    # ── Main Content ──
+    if not st.session_state.doc:
+        st.info("👉 กรุณาอัปโหลดไฟล์ PDF ด้านล่างนี้เพื่อเริ่มต้นทำงาน")
+        
+        # เพิ่มกล่องอัปโหลดไว้ตรงกลางหน้าจอไปเลย
+        uploaded_file_main = st.file_uploader("อัปโหลดไฟล์ PDF (ลากไฟล์มาวางตรงนี้ได้เลย)", type=['pdf'])
+        
+        if uploaded_file_main and uploaded_file_main.name != st.session_state.current_file:
+            st.session_state.doc = fitz.open(stream=file_bytes, filetype="pdf")
+            st.session_state.current_file = uploaded_file_main.name
+            st.session_state.current_page = 0
+            st.session_state.undo_stack.clear()
+            st.session_state.canvas_key = 0
+            st.rerun()
+            
         return
 
     # ── Navigation bar ──
@@ -996,6 +1009,15 @@ def main():
     if bg is None:
         st.error("ไม่สามารถโหลดหน้า PDF ได้")
         return
+    # --- เพิ่มโค้ดนี้เพื่อบังคับแสดงภาพดิบๆ ---
+    if bg_image:
+        # บังคับลดขนาดรูปถ้ามันใหญ่เกินไป (ป้องกัน Canvas จอดำ/ขาว)
+        if bg_image.width > 2000 or bg_image.height > 2000:
+            st.warning("⚠️ ไฟล์ภาพมีขนาดใหญ่เกินไป ระบบกำลังปรับลดขนาดอัตโนมัติ...")
+            bg_image.thumbnail((1500, 1500), Image.Resampling.LANCZOS)
+    else:
+        st.error("❌ ไม่สามารถดึงภาพจากไฟล์ PDF ได้")
+    # -------------------------------------
 
     # วาด text drafts ลงบน bg image เพื่อแสดงตัวอย่าง (ก่อน commit)
     p = st.session_state.current_page
