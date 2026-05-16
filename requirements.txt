@@ -85,6 +85,7 @@ six==1.17.0
 smmap==5.0.3
 sounddevice==0.5.5
 streamlit==1.40.0
+rich<14.0.0
 streamlit-drawable-canvas==0.9.3
 tenacity==9.1.4
 threadpoolctl==3.6.0
